@@ -6,9 +6,10 @@ require 'json'
 require 'open-uri'
 require 'yaml'
 require 'hipchat'
+require 'pp'
 
 def parseConfig(file)
-   return YAML::parse(open(file).read)
+   return YAML.load_file(file)
 end
 
 def notifyHipChat(notification, severity)
@@ -29,7 +30,10 @@ end
 
 def main(configfile)
    config = parseConfig(configfile)
-   pp(config)
+   #puts config.inspect
+   config["monitors"].each do |monitor|
+      print monitor["monitor"] + "\n"
+   end
 end
 
 if __FILE__ == $PROGRAM_NAME
