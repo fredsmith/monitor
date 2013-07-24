@@ -1,21 +1,14 @@
 monitors:
-  - monitor: nrg5 cores
+  - monitor: nrg5 cores unavail
     type: graphite
-    server: http://mon-graphite.infra.us.grid.nuance.com/render
-    target: movingAverage(nrg5-qmaster.nrg5.us.grid.nuance.com.sge.unavail,10)
+    server: http://mon-graphite.infra.us.grid.nuance.com
+    target: movingAverage(nrg5-qmaster.sge.unavail,10)
     warning: 200
     critical: 400
     notify: General
-  - monitor: nrg5 errors
+  - monitor: nrg1 cores unavail
     type: graphite
-    server: http://mon-graphite.infra.us.grid.nuance.com/render
-    target: movingAverage(nrg5-qmaster.nrg5.us.grid.nuance.com.sge.unavail,10)
-    warning: 200
-    critical: 400
-    notify: General
-  - monitor: nrg1 cores
-    type: graphite
-    server: http://mon-graphite.infra.us.grid.nuance.com/render
+    server: http://mon-graphite.infra.us.grid.nuance.com
     target: movingAverage(grid-sge1.sge.unavail,10)
     warning: 200
     critical: 400
