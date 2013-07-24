@@ -7,6 +7,8 @@ require 'open-uri'
 require 'yaml'
 require 'hipchat'
 require 'pp'
+require "rest-client"
+require "json"
 
 def parseConfig(file)
    return YAML.load_file(file)
@@ -23,16 +25,30 @@ def notifyHipChat(notification, severity)
    end
 end
 
-def checkGraphite(server,target)
-   #FIXME
-   return true
+def graphiteQuery(url)
+  response = RestClient.get url
+  result = JSON.parse(response.body, :symbolize_names => true)
+  return (result.first[:datapoints].select { |el| not el[0].nil? }).last[0].round(2)
+end
+
+def checkGraphite(monitor)
+  url = monitor["server"] + "/render?format=json&target=" + monitor["target"] + "&from=-10min"
+  print url;
 end
 
 def main(configfile)
    config = parseConfig(configfile)
    #puts config.inspect
    config["monitors"].each do |monitor|
-      print monitor["monitor"] + "\n"
+      print monitor["monitor"] + ": "
+      if monitor["type"] == "graphite"
+         checkGraphite(monitor)
+      elsif monitor["type"] == "shell"
+         print "shell"
+      else 
+         print "unknown"
+      end
+      print "\n"
    end
 end
 
