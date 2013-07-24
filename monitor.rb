@@ -27,12 +27,13 @@ end
 
 
 def checkGraphite(monitor)
-  url = monitor["server"] + "/render?format=json&target=" + monitor["target"] + "&from=-10min"
+  url = monitor["server"] + "/render?format=json&target=" + monitor["target"] + "&from=-2h"
+  #print url
   response = RestClient.get(url)
   result = JSON.parse(response.body, :symbolize_names => true)
-  currentValue = (result.first[:datapoints].select { |el| not el[0].nil? }).last[0].round(2)
-  #if monitor["warning"] > monitor["critical"]
-  print currentValue
+  currentValue = (result.first[:datapoints].select { |el| not el[0].nil? }).last[0]
+  if monitor["warning"] > monitor["critical"]
+
 end
 
 def main(configfile)
