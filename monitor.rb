@@ -25,15 +25,14 @@ def notifyHipChat(notification, severity)
    end
 end
 
-def graphiteQuery(url)
-  response = RestClient.get url
-  result = JSON.parse(response.body, :symbolize_names => true)
-  return (result.first[:datapoints].select { |el| not el[0].nil? }).last[0].round(2)
-end
 
 def checkGraphite(monitor)
   url = monitor["server"] + "/render?format=json&target=" + monitor["target"] + "&from=-10min"
-  print url;
+  response = RestClient.get(url)
+  result = JSON.parse(response.body, :symbolize_names => true)
+  currentValue = (result.first[:datapoints].select { |el| not el[0].nil? }).last[0].round(2)
+  #if monitor["warning"] > monitor["critical"]
+  print currentValue
 end
 
 def main(configfile)
