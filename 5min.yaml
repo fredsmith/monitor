@@ -5,32 +5,40 @@ monitors:
     target: movingAverage(nrg5-qmaster.sge.unavail,10)
     warning: 200
     critical: 400
-    notify: General
+    notify: Hipchat
   - monitor: nrg1 cores unavail
     type: graphite
     server: http://mon-graphite.infra.us.grid.nuance.com
     target: movingAverage(grid-sge1.sge.unavail,10)
     warning: 200
     critical: 400
-    notify: General
-  - monitor: nrg1 should fail
+    notify: Hipchat
+  - monitor: nrg1 scratch waiters
     type: graphite
     server: http://mon-graphite.infra.us.grid.nuance.com
-    target: movingAverage(grid-sgeasd1.sge.unavail,10)
+    target: movingAverage(sum(nrg1-gpfs*.nrg1.us.grid.nuance.com.gpfs.waiters),10)
     warning: 200
     critical: 400
-    notify: General
-  - monitor: unn1 ssh
-    type: shell
-    script: /net/yum/admin/work/fred/checks/check_ssh.sh grid-unn1.grid.nuance.com
-    notify: General
-
+    notify: Hipchat
+  - monitor: nrg1 static waiters
+    type: graphite
+    server: http://mon-graphite.infra.us.grid.nuance.com
+    target: movingAverage(sum(gpfs2-srv*.grid.nuance.com.gpfs.waiters),10)
+    warning: 200
+    critical: 400
+    notify: Hipchat
+#  - monitor: nrg5 waiters
+#    type: graphite
+#    server: http://mon-graphite.infra.us.grid.nuance.com
+#    target: movingAverage(sum(nrg5-gpfs*.gpfs.waiters),10)
+#    warning: 200
+#    critical: 400
+#    notify: Hipchat
 notifiers: 
-   General: 
+   Hipchat: 
      type: hipchat
-     channel: General
      key: 5fbda24fff6c2a2921b7ea4199aeb9
-     channel: Logs
+     channel: Monitoring
    gridops: 
      address: gridops@nuance.com
      type: email
