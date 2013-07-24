@@ -64,13 +64,13 @@ def main(configfile)
       else 
          status = { 'status' => "critical", 'message' => monitor["monitor"] + " is of unknown type " + monitor["type"] }
       end
-      #if status["status"] != "OK"
-      if config["notifiers"][monitor["notify"]]["type"] == "hipchat"
-         notifyHipChat(config["notifiers"][monitor["notify"]]["channel"], config["notifiers"][monitor["notify"]]["key"], status["message"], status["status"])
-      elsif config["notifiers"][monitor["notify"]]["type"] == "email"
-         notifyEmail(status["message"], status["status"])
+      if status["status"] != "OK"
+         if config["notifiers"][monitor["notify"]]["type"] == "hipchat"
+            notifyHipChat(config["notifiers"][monitor["notify"]]["channel"], config["notifiers"][monitor["notify"]]["key"], status["message"], status["status"])
+         elsif config["notifiers"][monitor["notify"]]["type"] == "email"
+            notifyEmail(status["message"], status["status"])
+         end
       end
-      #end
    end
 end
 
