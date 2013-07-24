@@ -14,41 +14,63 @@ def parseConfig(file)
    return YAML.load_file(file)
 end
 
-def notifyHipChat(notification, severity)
-   client = HipChat::Client.new('5fbda24fff6c2a2921b7ea4199aeb9')
+def notifyHipChat(channel, key, notification, severity)
+   client = HipChat::Client.new(key)
    if severity == "critical"
-      client['General'].send('monitor', notification, :color => 'red', notify => true)
+      client[channel].send('monitor', notification, :color => 'red', 'notify' => true)
    elsif severity == "warning"
-      client['General'].send('monitor', notification, :color => 'yellow')
+      client[channel].send('monitor', notification, :color => 'yellow')
    else 
-      client['General'].send('monitor', notification, :color => 'green')
+      client[channel].send('monitor', notification, :color => 'green')
    end
 end
 
 
 def checkGraphite(monitor)
+  # takes a monitor hash and returns a status hash
   url = monitor["server"] + "/render?format=json&target=" + monitor["target"] + "&from=-2h"
-  #print url
-  response = RestClient.get(url)
+  begin
+     response = RestClient.get(url)
+  rescue => error
+     #catch errors with graphite or misconfigured checks.
+     return { 'status' => "critical", 'message' => monitor["monitor"] + ": " + url + " returned an error" }
+  end
   result = JSON.parse(response.body, :symbolize_names => true)
   currentValue = (result.first[:datapoints].select { |el| not el[0].nil? }).last[0]
   if monitor["warning"] > monitor["critical"]
-
+     if currentValue < monitor["critical"]
+        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s}
+     elsif currentValue < monitor["warning"]
+        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s}
+     end
+  elsif monitor["warning"] < monitor["critical"]
+     if currentValue > monitor["critical"]
+        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s}
+     elsif currentValue > monitor["warning"]
+        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s}
+     end
+  end
+  return {'status' => "OK", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s + ", critical = " + monitor["critical"].to_s}
+  
 end
 
 def main(configfile)
    config = parseConfig(configfile)
    #puts config.inspect
    config["monitors"].each do |monitor|
-      print monitor["monitor"] + ": "
+      #print monitor["monitor"] + ": "
       if monitor["type"] == "graphite"
-         checkGraphite(monitor)
-      elsif monitor["type"] == "shell"
-         print "shell"
+         status = checkGraphite(monitor)
       else 
-         print "unknown"
+         status = { 'status' => "critical", 'message' => monitor["monitor"] + " is of unknown type " + monitor["type"] }
       end
-      print "\n"
+      #if status["status"] != "OK"
+      if config["notifiers"][monitor["notify"]]["type"] == "hipchat"
+         notifyHipChat(config["notifiers"][monitor["notify"]]["channel"], config["notifiers"][monitor["notify"]]["key"], status["message"], status["status"])
+      elsif config["notifiers"][monitor["notify"]]["type"] == "email"
+         notifyEmail(status["message"], status["status"])
+      end
+      #end
    end
 end
 
