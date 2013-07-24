@@ -10,8 +10,8 @@ A simple Graphite (and eventually more) alerting tool.
  - Alerts via Hipchat
 
 ## Dependencies
-   apt-get install ruby-dev
-   gem install hipchat json rest-client
+    apt-get install ruby-dev
+    gem install hipchat json rest-client
 
 ## Installation
 
