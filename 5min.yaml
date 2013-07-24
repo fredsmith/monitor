@@ -6,6 +6,13 @@ monitors:
     warning: 200
     critical: 400
     notify: General
+  - monitor: nrg5 errors
+    type: graphite
+    server: http://mon-graphite.infra.us.grid.nuance.com/render
+    target: movingAverage(nrg5-qmaster.nrg5.us.grid.nuance.com.sge.unavail,10)
+    warning: 200
+    critical: 400
+    notify: General
   - monitor: nrg1 cores
     type: graphite
     server: http://mon-graphite.infra.us.grid.nuance.com/render
