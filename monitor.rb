@@ -19,13 +19,13 @@ def notifyHipChat(channel, key, notification, severity)
    client = HipChat::Client.new(key)
    if severity == "critical"
       # send a red alert with the "notify" flag on critical errors
-      client[channel].send('monitor', notification, :color => 'red', 'notify' => true)
+      client[channel].send('monitor', '@all ' + notification, :color => 'red', 'notify' => true, :message_format => 'text')
    elsif severity == "warning"
       # send a yellow alert without notification on warnings
-      client[channel].send('monitor', notification, :color => 'yellow')
+      client[channel].send('monitor', notification, :color => 'yellow', :message_format => 'text')
    else 
       # send a green alert on everything else.
-      client[channel].send('monitor', notification, :color => 'green')
+      client[channel].send('monitor', notification, :color => 'green', :message_format => 'text')
    end
 end
 
