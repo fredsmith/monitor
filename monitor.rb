@@ -9,6 +9,7 @@ require 'hipchat'
 require 'pp'
 require "rest-client"
 require "json"
+require "imgur2"
 
 def parseConfig(file)
    # return a loaded config object
@@ -29,6 +30,13 @@ def notifyHipChat(channel, key, notification, severity)
    end
 end
 
+def imgurCopy(url)
+   imgur = Imgur2.new '65aea9a07b4f6110c90248ffa247d41a'
+   open(url) { |f|
+      response = imgur.upload(f);
+      return response['upload']['links']['original']
+   }
+end
 
 def checkGraphite(monitor)
   # takes a monitor hash and returns a status hash
@@ -45,16 +53,16 @@ def checkGraphite(monitor)
   if monitor["warning"] > monitor["critical"]
      # check to see if warning is higher than critical.  If so, we assume high is good and low is bad.
      if currentValue < monitor["critical"]
-        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s}
+        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s + " see " + monitor["context"] + " " + imgurCopy(monitor['graph'])}
      elsif currentValue < monitor["warning"]
-        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s}
+        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s + " see " + monitor["context"] + " " + imgurCopy(monitor['graph'])}
      end
   elsif monitor["warning"] < monitor["critical"]
      # if warning is lower than critical, assume low is good and high is bad.
      if currentValue > monitor["critical"]
-        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s}
+        return {'status' => "critical", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; critical = " + monitor["critical"].to_s + " see " + monitor["context"] + " " + imgurCopy(monitor['graph'])}
      elsif currentValue > monitor["warning"]
-        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s}
+        return {'status' => "warning", 'message' => monitor["monitor"] + " is " + currentValue.to_s + "; warning = " + monitor["warning"].to_s + " see " + monitor["context"] + " " + imgurCopy(monitor['graph'])}
      end
   end
   # if we made it here, everything is OK.  return a status object with some notes about the current good status, and what our thresholds are.
