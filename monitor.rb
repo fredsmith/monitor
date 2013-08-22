@@ -10,6 +10,7 @@ require 'pp'
 require "rest-client"
 require "json"
 require "imgur2"
+require "logger"
 
 def parseConfig(file)
    # return a loaded config object
@@ -71,6 +72,7 @@ def checkGraphite(monitor)
 end
 
 def main(configfile)
+   log = Logger.new(configfile.sub('yaml', 'log'), 10, 1024000)
    config = parseConfig(configfile)
    config["monitors"].each do |monitor|
       # iterate through all monitor objects
@@ -80,6 +82,16 @@ def main(configfile)
          # eventually more stuff can go above. shell script checks are next on the list.
          status = { 'status' => "critical", 'message' => monitor["monitor"] + " is of unknown type " + monitor["type"] }
       end
+
+      if status["status"] == "OK"
+         log.info status["message"]
+      elsif status["status"] == "warning"
+         log.warn status["message"]
+      elsif status["status"] == "critical"
+         log.error status["message"]
+      end
+      
+
       if status["status"] != "OK"
          # got a not OK status.
          if config["notifiers"][monitor["notify"]]["type"] == "hipchat"
