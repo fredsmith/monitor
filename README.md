@@ -11,7 +11,7 @@ A simple Graphite (and eventually more) alerting tool.
 
 ## Dependencies
     apt-get install ruby-dev
-    gem install hipchat json rest-client
+    gem install hipchat json rest-client imgur2 logger
 
 ## Installation
 
